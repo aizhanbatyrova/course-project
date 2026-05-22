@@ -1,0 +1,494 @@
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Car Manufacturing ERP | Factory Control Center</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                background: #0a0e1a;
+                font-family: 'Inter', sans-serif;
+                color: #eef2ff;
+                overflow-x: hidden;
+            }
+
+            /* ========= ЛЕВАЯ ПАНЕЛЬ ========= */
+            .sidebar {
+                width: 280px;
+                background: #0c1020;
+                border-right: 1px solid #1e2538;
+                padding: 28px 20px;
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                overflow-y: auto;
+                z-index: 100;
+            }
+
+            .logo h2 {
+                font-size: 20px;
+                font-weight: 700;
+                background: linear-gradient(135deg, #fff, #8f9bb5);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+            }
+            .logo p {
+                font-size: 11px;
+                color: #5e6f8d;
+                margin-top: 6px;
+            }
+
+            .nav-section {
+                margin: 32px 0 24px;
+            }
+            .section-title {
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: #5e6f8d;
+                margin-bottom: 14px;
+            }
+            .nav-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 12px;
+                font-size: 14px;
+                font-weight: 500;
+                color: #b9c7dd;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: 0.15s;
+                margin-bottom: 4px;
+            }
+            .nav-item i {
+                width: 22px;
+                color: #5e6f8d;
+                font-size: 16px;
+            }
+            .nav-item:hover, .nav-item.active {
+                background: #1a1f32;
+                color: white;
+            }
+            .nav-item:hover i, .nav-item.active i {
+                color: #3b82f6;
+            }
+
+            /* ========= ОСНОВНОЙ КОНТЕНТ ========= */
+            .main-content {
+                margin-left: 280px;
+                padding: 24px 32px;
+                min-height: 100vh;
+            }
+
+            .top-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 28px;
+                flex-wrap: wrap;
+                gap: 16px;
+            }
+            .top-header h1 {
+                font-size: 28px;
+                font-weight: 700;
+                background: linear-gradient(135deg, #ffffff, #96a7c2);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+            }
+            .ip-badge {
+                background: #0f1322;
+                border: 1px solid #252c3f;
+                border-radius: 40px;
+                padding: 6px 16px;
+                font-family: monospace;
+                font-size: 12px;
+            }
+            .ip-badge i {
+                margin-right: 6px;
+                color: #3b82f6;
+            }
+
+            /* KPI карточки */
+            .kpi-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+                margin-bottom: 28px;
+            }
+            .kpi-card {
+                background: #0f1322;
+                border: 1px solid #1e2538;
+                border-radius: 24px;
+                padding: 18px 22px;
+                transition: 0.15s;
+                position: relative;
+                overflow: hidden;
+            }
+            .kpi-card::after {
+                content: '';
+                position: absolute;
+                top: -30px;
+                right: -30px;
+                width: 100px;
+                height: 100px;
+                background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+                border-radius: 50%;
+            }
+            .kpi-card:hover {
+                border-color: #3b82f6;
+                transform: translateY(-2px);
+            }
+            .kpi-title {
+                font-size: 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+                color: #7e8aa8;
+                margin-bottom: 8px;
+                letter-spacing: 0.5px;
+            }
+            .kpi-value {
+                font-size: 34px;
+                font-weight: 800;
+                color: white;
+            }
+            .kpi-sub {
+                font-size: 12px;
+                color: #5e6f8d;
+                margin-top: 6px;
+            }
+
+            .double-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 24px;
+                margin-bottom: 28px;
+            }
+            .glass-card {
+                background: #0f1322;
+                border: 1px solid #1e2538;
+                border-radius: 24px;
+                padding: 20px 24px;
+                transition: 0.15s;
+            }
+            .glass-card:hover {
+                border-color: #2f3b5e;
+            }
+            .card-header {
+                font-size: 18px;
+                font-weight: 700;
+                margin-bottom: 18px;
+                border-left: 3px solid #3b82f6;
+                padding-left: 14px;
+            }
+            .stat-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 12px 0;
+                border-bottom: 1px solid #1a1f30;
+            }
+            .invoice-line {
+                display: flex;
+                justify-content: space-between;
+                padding: 12px 0;
+                border-bottom: 1px solid #1a1f30;
+                font-family: monospace;
+            }
+
+            .data-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 13px;
+            }
+            .data-table th, .data-table td {
+                padding: 12px 8px;
+                text-align: left;
+                border-bottom: 1px solid #1e2538;
+            }
+            .data-table th {
+                color: #8f9bb5;
+                font-weight: 600;
+            }
+
+            button {
+                background: #1e2a44;
+                border: none;
+                padding: 8px 18px;
+                border-radius: 40px;
+                color: white;
+                font-weight: 500;
+                cursor: pointer;
+                transition: 0.15s;
+            }
+            button:hover {
+                background: #2d3e66;
+                transform: scale(1.02);
+            }
+            .btn-small {
+                padding: 4px 12px;
+                font-size: 12px;
+            }
+
+            .status-success {
+                background: #10b98120;
+                color: #10b981;
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+            .status-danger {
+                background: #ef444420;
+                color: #ef4444;
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+            .status-warning {
+                background: #f59e0b20;
+                color: #f59e0b;
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            .chart-box {
+                background: #080b12;
+                border-radius: 20px;
+                padding: 16px;
+                margin-top: 16px;
+            }
+            .report-stat-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
+                margin-bottom: 24px;
+            }
+            .report-stat-card {
+                background: #080b12;
+                border-radius: 20px;
+                padding: 16px;
+                text-align: center;
+            }
+            .report-stat-value {
+                font-size: 28px;
+                font-weight: 800;
+                color: white;
+            }
+            .report-stat-label {
+                font-size: 12px;
+                color: #7a89aa;
+                margin-top: 6px;
+            }
+
+            @media (max-width: 1100px) {
+                .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            }
+            @media (max-width: 900px) {
+                .sidebar { width: 240px; }
+                .main-content { margin-left: 240px; }
+                .double-grid { grid-template-columns: 1fr; }
+            }
+            @media (max-width: 768px) {
+                .sidebar { transform: translateX(-100%); position: fixed; transition: 0.3s; }
+                .sidebar.open { transform: translateX(0); }
+                .main-content { margin-left: 0; padding: 16px; }
+                .menu-toggle { display: block; position: fixed; top: 16px; left: 16px; z-index: 101; background: #3b82f6; border: none; border-radius: 12px; padding: 8px 12px; }
+                .kpi-grid { grid-template-columns: 1fr; }
+                .report-stat-grid { grid-template-columns: repeat(2, 1fr); }
+            }
+            .menu-toggle { display: none; }
+        </style>
+    </head>
+    <body>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <h2>Car Manufacturing ERP</h2>
+                <p>Factory Control Center v2.0</p>
+            </div>
+            <div class="nav-section">
+                <div class="section-title">РЕСУРСЫ</div>
+                <div class="nav-item active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Дашборд</div>
+                <div class="nav-item" data-page="materials"><i class="fas fa-boxes"></i> Raw Materials</div>
+                <div class="nav-item" data-page="employees"><i class="fas fa-users"></i> Employees</div>
+                <div class="nav-item" data-page="showroom"><i class="fas fa-car"></i> Showroom</div>
+            </div>
+            <div class="nav-section">
+                <div class="section-title">OPERATIONAL MANAGEMENT</div>
+                <div class="nav-item" data-page="buying"><i class="fas fa-shopping-cart"></i> Buying</div>
+                <div class="nav-item" data-page="production"><i class="fas fa-industry"></i> Production</div>
+                <div class="nav-item" data-page="sales"><i class="fas fa-chart-line"></i> Global Sales</div>
+                <div class="nav-item" data-page="finance"><i class="fas fa-coins"></i> Finance & Loans</div>
+                <div class="nav-item" data-page="analytics"><i class="fas fa-chart-pie"></i> Analytics Hub</div>
+                <div class="nav-item" data-page="reports"><i class="fas fa-file-alt"></i> Все отчёты</div>
+            </div>
+        </aside>
+
+        <main class="main-content" id="mainContent">
+            <!-- ДАШБОРД -->
+            <div id="dashboardView">
+                <div class="top-header">
+                    <h1>Factory Control Center</h1>
+                    <div class="ip-badge"><i class="fas fa-database"></i> SQL Server Online | 127.0.0.1:5000</div>
+                </div>
+                <div class="kpi-grid">
+                    <div class="kpi-card"><div class="kpi-title">CURRENT BUDGET</div><div class="kpi-value">27,934,853</div><div class="kpi-sub">KGS · бюджет завода</div></div>
+                    <div class="kpi-card"><div class="kpi-title">WAREHOUSE</div><div class="kpi-value">7 items</div><div class="kpi-sub">в наличии + запчасти</div></div>
+                    <div class="kpi-card"><div class="kpi-title">EMPLOYEES</div><div class="kpi-value">6 staff</div><div class="kpi-sub">инженеры, менеджеры</div></div>
+                    <div class="kpi-card"><div class="kpi-title">SHOWROOM</div><div class="kpi-value">3 models</div><div class="kpi-sub">готово к продаже</div></div>
+                </div>
+                <div class="double-grid">
+                    <div class="glass-card"><div class="card-header">🚗 АВТОПАРК</div><div class="stat-row"><span>🚘 В заказе:</span><span>20</span></div><div class="stat-row"><span>🔁 К передаче:</span><span>35</span></div><div class="stat-row"><span>🔧 В обслуживании:</span><span>89</span></div><div class="stat-row"><span>✅ Всего:</span><span class="status-success">149 единиц</span></div></div>
+                    <div class="glass-card"><div class="card-header">⚠️ ШТРАФЫ</div><div class="stat-row"><span>🆕 Новые:</span><span class="status-danger">5</span></div><div class="stat-row"><span>⏳ Неоплаченные:</span><span>89</span></div><div class="stat-row"><span>💰 Задолженность:</span><span>42,800 KGS</span></div></div>
+                    <div class="glass-card"><div class="card-header">📋 ЗАЯВКИ</div><div class="stat-row"><span>🛠 Тех. обслуживание:</span><span>1</span></div><div class="stat-row"><span>📄 Акт сверки:</span><span>1</span></div><div class="stat-row"><span>💬 Отзыв:</span><span>1</span></div><div class="stat-row"><span>🚚 Перегон авто:</span><span>1</span></div></div>
+                    <div class="glass-card"><div class="card-header">💰 СЧЕТА</div><div class="invoice-line"><span>ML 0521 511</span><span>138,372.53 KGS</span></div><div class="invoice-line"><span>TF 0621 109</span><span>224,500.00 KGS</span></div><div class="invoice-line"><span>FL 0511 500</span><span>67,890.12 KGS</span></div></div>
+                </div>
+                <div class="glass-card"><div class="card-header">📊 Динамика производства и продаж</div><div class="double-grid" style="margin-bottom:0;"><div><canvas id="prodChart" height="180"></canvas></div><div><canvas id="revenueChart" height="180"></canvas></div></div></div>
+            </div>
+            <div id="dynamicArea"></div>
+        </main>
+
+        <script>
+            // Данные для дашборда
+            let materials = [
+                { name: "Сталь листовая (кузовная)", qty: 3698, unit: "кг", value: 2493333 },
+                { name: "Двигатель Turbo 2.0", qty: 37, unit: "шт", value: 4400000 },
+                { name: "Двигатель Электро 300кВт", qty: 26, unit: "шт", value: 5530000 },
+                { name: "Шины Michelin R19", qty: 59, unit: "комплект", value: 1610000 },
+                { name: "Кожа салона (черная)", qty: 42, unit: "м²", value: 711000 },
+                { name: "Аккумуляторная батарея", qty: 32, unit: "шт", value: 3150000 },
+                { name: "Краска (металлик)", qty: 19, unit: "литры", value: 190000 }
+            ];
+            let employees = [
+                { name: "Иванов Петр Сергеевич", position: "Генеральный директор", salary: 250000 },
+                { name: "Смирнова Анна Игоревна", position: "Снабженец", salary: 95000 },
+                { name: "Кузнецов Олег Петрович", position: "Главный инженер", salary: 180000 },
+                { name: "Лебедев Максим Антонович", position: "Мастер цеха", salary: 110000 },
+                { name: "Попов Дмитрий Витальевич", position: "Автомеханик", salary: 85000 },
+                { name: "Соколова Елена Викторовна", position: "Менеджер по продажам", salary: 90000 }
+            ];
+            let products = [
+                { name: "Седан 'Бизнес-S'", price: 1000000, inStock: 8 },
+                { name: "Кроссовер 'Шторм'", price: 1500000, inStock: 5 },
+                { name: "Электромобиль 'Молния'", price: 1800000, inStock: 3 }
+            ];
+            let salesHistory = [
+                { id: 1013, product: "Седан Бизнес-S", qty: 1, amount: 1000000, date: "2026-04-29" },
+                { id: 1012, product: "Седан Бизнес-S", qty: 1, amount: 750000, date: "2026-04-15" },
+                { id: 1011, product: "Седан Бизнес-S", qty: 2, amount: 2000000, date: "2026-03-30" },
+                { id: 1010, product: "Кроссовер Шторм", qty: 3, amount: 4500000, date: "2026-03-04" }
+            ];
+            let loans = [
+                { id: 1005, bank: "Mbank", principal: 300000, totalDue: 331500 },
+                { id: 1003, bank: "Mbank", principal: 200000, totalDue: 221000 },
+                { id: 1002, bank: "demir bank", principal: 100000, totalDue: 110500 }
+            ];
+
+            function renderMaterials() {
+                let html = '<div class="glass-card"><div class="card-header">📦 Raw Materials Stock (SQL Server)</div><table class="data-table"><thead><tr><th>NAME</th><th>QTY</th><th>UNIT</th><th>TOTAL VALUE (KGS)</th></tr></thead><tbody>';
+                materials.forEach(m => { html += `<tr><td>${m.name}</td><td>${m.qty}</td><td>${m.unit}</td><td>${m.value.toLocaleString()}</td></tr>`; });
+                html += '</tbody></table><div style="margin-top:12px;font-size:12px;color:#7e8aa8;"><i class="fas fa-database"></i> Data retrieved from Microsoft SQL Server</div></div>';
+                return html;
+            }
+            function renderEmployees() {
+                let html = '<div class="glass-card"><div class="card-header">👥 Staff List</div><table class="data-table"><thead><tr><th>FULL NAME</th><th>POSITION</th><th>SALARY (KGS)</th></tr></thead><tbody>';
+                employees.forEach(e => { html += `<tr><td>${e.name}</td><td>${e.position}</td><td>${e.salary.toLocaleString()}</td></tr>`; });
+                html += '</tbody></table></div>';
+                return html;
+            }
+            function renderShowroom() {
+                let html = '<div class="glass-card"><div class="card-header">🏬 Showroom</div><div class="double-grid" style="margin-bottom:0;">';
+                products.forEach(p => {
+                    let icon = p.name.includes('Седан') ? '🚗' : (p.name.includes('Кроссовер') ? '🚙' : '⚡');
+                    html += `<div style="background:#080b12;border-radius:20px;padding:20px;text-align:center;">
+                        <div style="font-size:48px;">${icon}</div>
+                        <h3>${p.name}</h3>
+                        <p>💰 ${p.price.toLocaleString()} KGS</p>
+                        <p>📦 В наличии: <strong>${p.inStock}</strong> шт</p>
+                        <button onclick="alert('Заказ оформлен: ${p.name}')">Заказать</button>
+                    </div>`;
+                });
+                html += '</div></div>';
+                return html;
+            }
+            function renderBuying() {
+                let opts = materials.map(m => `<option>${m.name}</option>`).join('');
+                return `<div class="glass-card"><div class="card-header">🛒 Lab 1: Закупки</div><div class="double-grid"><div><h3>Заказ материалов</h3><select id="matSelect" style="background:#1a1f32;padding:10px;border-radius:12px;width:100%;margin-bottom:10px;">${opts}</select><input type="number" id="buyQty" placeholder="Количество" style="background:#1a1f32;padding:10px;border-radius:12px;width:100%;margin-bottom:10px;"><button onclick="alert('Заказ оформлен')">📦 Оформить заказ</button></div><div><h3>Поставщики</h3><p>🔹 ООО "МеталлИнвест"</p><p>🔹 ООО "АвтоКомплект"</p><p>🔹 ООО "Шинный Мир"</p></div></div></div>`;
+            }
+            function renderProduction() {
+                return `<div class="glass-card"><div class="card-header">🏭 Lab 2: Производство</div><div style="background:#080b12;padding:20px;border-radius:20px;"><h3>Сборочная линия</h3><select id="prodModel" style="background:#1a1f32;padding:10px;border-radius:12px;width:100%;margin-bottom:10px;"><option>Седан "Бизнес-S"</option><option>Кроссовер "Шторм"</option><option>Электромобиль "Молния"</option></select><input type="number" id="prodQty" placeholder="Количество" style="background:#1a1f32;padding:10px;border-radius:12px;width:100%;margin-bottom:10px;"><button onclick="alert('Производство запущено')">🔧 Запустить сборку</button></div></div>`;
+            }
+            function renderSales() {
+                let rows = '';
+                salesHistory.forEach(s => { rows += `<tr><td>${s.id}</td><td>${s.product}</td><td>${s.qty}</td><td>${s.amount.toLocaleString()}</td><td>${s.date}</td><td><button class="btn-small" onclick="alert('Откат продажи ${s.id}')">↩ Откат</button></td></tr>`; });
+                return `<div class="glass-card"><div class="card-header">🌍 Global Sales</div><div style="margin-bottom:24px;background:#080b12;padding:20px;border-radius:20px;"><h3>Новая продажа</h3><select id="saleModel" style="background:#1a1f32;padding:10px;border-radius:12px;width:100%;margin-bottom:10px;"><option>Седан "Бизнес-S"</option><option>Кроссовер "Шторм"</option><option>Электромобиль "Молния"</option></select><input type="number" id="saleQty" placeholder="Количество" style="margin:10px 0;background:#1a1f32;padding:10px;border-radius:12px;width:100%;"><input type="number" id="salePrice" placeholder="Цена за шт" style="margin-bottom:10px;background:#1a1f32;padding:10px;border-radius:12px;width:100%;"><button onclick="alert('Продажа оформлена')">💰 Продать</button></div><h3>История продаж</h3><table class="data-table"><thead><tr><th>ID</th><th>Модель</th><th>Кол-во</th><th>Сумма</th><th>Дата</th><th>Действие</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+            }
+            function renderFinance() {
+                let loanRows = '';
+                loans.forEach(l => { loanRows += `<tr><td>${l.id}</td><td>${l.bank}</td><td>${l.principal.toLocaleString()}</td><td>${l.totalDue.toLocaleString()}</td><td><button class="btn-small" onclick="alert('Погашение кредита ${l.id}')">💰 Погасить</button></td></tr>`; });
+                let totalSalary = employees.reduce((a,b) => a + b.salary, 0);
+                return `<div class="double-grid"><div class="glass-card"><div class="card-header">🏦 HR Department</div><div class="report-stat-grid"><div class="report-stat-card"><div class="report-stat-value">6</div><div class="report-stat-label">Сотрудников</div></div><div class="report-stat-card"><div class="report-stat-value">${totalSalary.toLocaleString()}</div><div class="report-stat-label">ФОТ (KGS)</div></div></div><button onclick="alert('Выплата зарплат: ${totalSalary.toLocaleString()} KGS')">💰 Выплатить зарплаты</button></div><div class="glass-card"><div class="card-header">🏦 Bank Loans</div><input placeholder="Название банка" id="bankNameInput" style="background:#1a1f32;padding:10px;border-radius:12px;width:100%;margin-bottom:10px;"><input type="number" id="loanAmountInput" placeholder="Сумма кредита" style="background:#1a1f32;padding:10px;border-radius:12px;width:100%;margin-bottom:10px;"><button onclick="alert('Заявка на кредит отправлена')">🏦 Запросить кредит</button></div></div><div class="glass-card"><div class="card-header">Активные кредиты</div><table class="data-table"><thead><tr><th>ID</th><th>Банк</th><th>Основной долг</th><th>К выплате</th><th>Действие</th></tr></thead><tbody>${loanRows}</tbody></table></div>`;
+            }
+            function renderAnalytics() {
+                setTimeout(() => {
+                    let ctx = document.getElementById('analyticsProdChart')?.getContext('2d');
+                    if(ctx) new Chart(ctx, { type: 'bar', data: { labels: ['Седан', 'Кроссовер', 'Электро'], datasets: [{ label: 'Произведено', data: [15, 10, 5], backgroundColor: '#3b82f6' }] } });
+                    let ctx2 = document.getElementById('analyticsRevenueChart')?.getContext('2d');
+                    if(ctx2) new Chart(ctx2, { type: 'line', data: { labels: ['Фев', 'Мар', 'Апр'], datasets: [{ label: 'Выручка (млн KGS)', data: [8, 12, 4], borderColor: '#10b981' }] } });
+                }, 100);
+                return `<div class="glass-card"><div class="card-header">📊 Analytics Hub · Lab 6</div><div class="report-stat-grid"><div class="report-stat-card"><div class="report-stat-value">30</div><div class="report-stat-label">Произведено авто</div></div><div class="report-stat-card"><div class="report-stat-value">24,052,000</div><div class="report-stat-label">Выручка (KGS)</div></div><div class="report-stat-card"><div class="report-stat-value">8,910,000</div><div class="report-stat-label">ФОТ (KGS)</div></div><div class="report-stat-card"><div class="report-stat-value">3</div><div class="report-stat-label">Активные кредиты</div></div></div><div class="double-grid"><div><canvas id="analyticsProdChart" height="200"></canvas><button style="margin-top:12px;" onclick="alert('Production Report')">📄 Production Report</button></div><div><canvas id="analyticsRevenueChart" height="200"></canvas><button style="margin-top:12px;" onclick="alert('Sales Report')">💰 Sales Report</button></div></div></div>`;
+            }
+            function renderReports() {
+                setTimeout(() => {
+                    ['repProdChart', 'repSalesChart', 'repSalaryChart', 'repLoanChart'].forEach(id => {
+                        let ctx = document.getElementById(id)?.getContext('2d');
+                        if(ctx) new Chart(ctx, { type: 'bar', data: { labels: ['Янв', 'Фев', 'Мар', 'Апр'], datasets: [{ label: 'Значение', data: [12, 19, 15, 17], backgroundColor: '#3b82f6' }] } });
+                    });
+                }, 100);
+                return `<div class="glass-card"><div class="card-header">📋 Все отчёты предприятия</div><div class="report-stat-grid"><div class="report-stat-card"><div class="report-stat-value">30</div><div class="report-stat-label">Всего произведено</div></div><div class="report-stat-card"><div class="report-stat-value">24,052,000</div><div class="report-stat-label">Общая выручка</div></div><div class="report-stat-card"><div class="report-stat-value">600,000</div><div class="report-stat-label">Кредитный портфель</div></div><div class="report-stat-card"><div class="report-stat-value">6</div><div class="report-stat-label">Сотрудников</div></div></div><div class="double-grid"><div><canvas id="repProdChart" height="150"></canvas><button style="margin-top:12px;">📈 Production Report</button></div><div><canvas id="repSalesChart" height="150"></canvas><button style="margin-top:12px;">💰 Sales Report</button></div><div><canvas id="repSalaryChart" height="150"></canvas><button style="margin-top:12px;">👥 Salary Report</button></div><div><canvas id="repLoanChart" height="150"></canvas><button style="margin-top:12px;">🏦 Loan Report</button></div></div></div>`;
+            }
+
+            const views = {
+                dashboard: () => { document.getElementById('dashboardView').style.display = 'block'; document.getElementById('dynamicArea').innerHTML = ''; setTimeout(() => { new Chart(document.getElementById('prodChart'), { type: 'bar', data: { labels: ['Фев','Мар','Апр','Май'], datasets: [{ label: 'Произведено', data: [8,10,12,7], backgroundColor: '#3b82f6' }] } }); new Chart(document.getElementById('revenueChart'), { type: 'line', data: { labels: ['Фев','Мар','Апр','Май'], datasets: [{ label: 'Выручка (млн KGS)', data: [5,8,12,7], borderColor: '#10b981' }] } }); }, 200); },
+                materials: () => { document.getElementById('dashboardView').style.display = 'none'; document.getElementById('dynamicArea').innerHTML = renderMaterials(); },
+                employees: () => { document.getElementById('dashboardView').style.display = 'none'; document.getElementById('dynamicArea').innerHTML = renderEmployees(); },
+                showroom: () => { document.getElementById('dashboardView').style.display = 'none'; document.getElementById('dynamicArea').innerHTML = renderShowroom(); },
+                buying: () => { document.getElementById('dashboardView').style.display = 'none'; document.getElementById('dynamicArea').innerHTML = renderBuying(); },
+                production: () => { document.getElementById('dashboardView').style.display = 'none'; document.getElementById('dynamicArea').innerHTML = renderProduction(); },
+                sales: () => { document.getElementById('dashboardView').style.display = 'none'; document.getElementById('dynamicArea').innerHTML = renderSales(); },
+                finance: () => { document.getElementById('dashboardView').style.display = 'none'; document.getElementById('dynamicArea').innerHTML = renderFinance(); },
+                analytics: () => { document.getElementById('dashboardView').style.display = 'none'; document.getElementById('dynamicArea').innerHTML = renderAnalytics(); },
+                reports: () => { document.getElementById('dashboardView').style.display = 'none'; document.getElementById('dynamicArea').innerHTML = renderReports(); }
+            };      
+
+            let dynamicDiv = document.createElement('div'); dynamicDiv.id = 'dynamicArea'; document.getElementById('mainContent').appendChild(dynamicDiv);
+            document.getElementById('dashboardView').style.display = 'block';
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    let tab = btn.getAttribute('data-page');
+                    if (views[tab]) views[tab]();
+                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+            document.getElementById('menuToggle')?.addEventListener('click', () => document.getElementById('sidebar')?.classList.toggle('open'));
+        </script>
+    </body>
+    </html>

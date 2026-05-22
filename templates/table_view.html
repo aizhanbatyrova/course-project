@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if page_kind == "employees" %}Employees{% elif page_kind == "materials" %}Raw Materials Stock{% elif page_kind == "products" %}Showroom{% else %}{{ title }}{% endif %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body class="app-body">
+<main class="erp-photo-shell operations-stack">
+    <header class="operation-header">
+        <div>
+            <p class="eyebrow">Data Table</p>
+            <h1>{% if page_kind == "employees" %}Employees{% elif page_kind == "materials" %}Raw Materials Stock{% elif page_kind == "products" %}Showroom{% else %}{{ title }}{% endif %}</h1>
+        </div>
+        <nav class="operation-nav">
+            <a href="/">Dashboard</a>
+            <a href="/buying">Buying</a>
+            <a href="/production">Production</a>
+            <a href="/sales">Sales</a>
+            <a href="/finance">Finance</a>
+        </nav>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <section class="photo-card">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </section>
+    {% endif %}
+    {% endwith %}
+
+    <section class="photo-card">
+        {% if page_kind == "employees" %}
+        <div class="photo-stats">
+            <div class="photo-stat">
+                <strong>{{ rows|length }}</strong>
+                <span>Total Employees</span>
+            </div>
+            <div class="photo-stat">
+                <strong>{{ (total_salary or 0)|money }}</strong>
+                <span>Monthly Payroll (KGS)</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="photo-table-wrap">
+            <table class="photo-table">
+                <thead>
+                    <tr>
+                        {% if page_kind == "products" %}
+                        <th>ID</th>
+                        <th>Model</th>
+                        <th>In Stock</th>
+                        <th>Value (KGS)</th>
+                        <th>Actions</th>
+                        {% elif page_kind == "materials" %}
+                        <th>Material</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Total Value (KGS)</th>
+                        <th>Status</th>
+                        {% elif page_kind == "employees" %}
+                        <th>Full Name</th>
+                        <th>Position</th>
+                        <th>Salary (KGS)</th>
+                        {% else %}
+                        {% for h in headers %}
+                        <th>{{ h }}</th>
+                        {% endfor %}
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        {% if page_kind == "products" %}
+                        <td>{{ row[0] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3]|money }}</td>
+                        <td>
+                            <div class="row-actions">
+                                <a class="photo-btn photo-btn-small" href="/production?product_id={{ row[0] }}">Produce</a>
+                                <a class="photo-btn photo-btn-small" href="/sales?product_id={{ row[0] }}">Sell</a>
+                                <a class="photo-btn photo-btn-small" href="/module2?product_id={{ row[0] }}">Request</a>
+                            </div>
+                        </td>
+                        {% elif page_kind == "materials" %}
+                        <td>{{ row[0] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3]|money }}</td>
+                        <td>
+                            {% if row[1] < 3 %}
+                            <span class="stock-badge stock-low">Low Stock</span>
+                            {% else %}
+                            <span class="stock-badge stock-ok">Available</span>
+                            {% endif %}
+                        </td>
+                        {% else %}
+                        {% for cell in row %}
+                        <td>{{ cell }}</td>
+                        {% endfor %}
+                        {% endif %}
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="{{ headers|length }}" class="muted">No records found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_kind == "materials" or page_kind == "employees" %}
+        <div class="photo-chart-card">
+            <canvas id="pageChart"></canvas>
+        </div>
+        {% endif %}
+    </section>
+
+    <div class="page-actions">
+        <a class="photo-btn photo-btn-small" href="/">Back to Dashboard</a>
+    </div>
+</main>
+
+{% if page_kind == "materials" or page_kind == "employees" %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const chartLabels = {{ chart_labels|default([])|tojson }};
+const chartData = {{ chart_data|default([])|tojson }};
+const isEmployees = {{ "true" if page_kind == "employees" else "false" }};
+const ctx = document.getElementById('pageChart');
+
+Chart.defaults.color = 'rgba(232, 237, 247, 0.72)';
+Chart.defaults.borderColor = 'rgba(116, 132, 160, 0.18)';
+
+if (ctx) {
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: isEmployees ? 'Salary (KGS)' : 'Value (million KGS)',
+                data: chartData,
+                backgroundColor: isEmployees ? '#16c784' : '#3b82f6',
+                borderWidth: 0,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+</script>
+{% endif %}
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+        {% if page_kind == "buying" %}Buying{% elif page_kind == "production" %}Production{% elif page_kind == "sales" %}Sales{% elif page_kind == "finance" %}Finance{% else %}Module 2 Requests{% endif %}
+    </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body class="app-body">
+<main class="erp-photo-shell operations-stack">
+    <header class="operation-header">
+        <div>
+            <p class="eyebrow">Factory Operations</p>
+            <h1>
+                {% if page_kind == "buying" %}Buying{% elif page_kind == "production" %}Production{% elif page_kind == "sales" %}Sales{% elif page_kind == "finance" %}Finance{% else %}Module 2 Requests{% endif %}
+            </h1>
+        </div>
+        <nav class="operation-nav">
+            <a href="/">Dashboard</a>
+            <a href="/buying" class="{% if page_kind == 'buying' %}active{% endif %}">Buying</a>
+            <a href="/production" class="{% if page_kind == 'production' %}active{% endif %}">Production</a>
+            <a href="/sales" class="{% if page_kind == 'sales' %}active{% endif %}">Sales</a>
+            <a href="/finance" class="{% if page_kind == 'finance' %}active{% endif %}">Finance</a>
+            <a href="/module2" class="{% if page_kind == 'module2' %}active{% endif %}">Module 2</a>
+        </nav>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <section class="photo-card">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </section>
+    {% endif %}
+    {% endwith %}
+
+    {% if page_kind == "buying" %}
+    <section class="photo-card">
+        <div class="photo-title">
+            <span class="photo-title-mark"></span>
+            <h1>Raw Material Purchase</h1>
+        </div>
+        <div class="ops-two-col">
+            <form action="/buy" method="POST" class="ops-form ops-form-panel">
+                <h2>New purchase</h2>
+                <select name="mat_id" class="photo-input" required>
+                    {% for m in raw_materials %}
+                    <option value="{{ m[0] }}">{{ m[1] }}</option>
+                    {% endfor %}
+                </select>
+                <input type="number" name="qty" min="1" placeholder="Quantity" class="photo-input" required>
+                <input type="number" name="price" min="1" placeholder="Total purchase amount" class="photo-input" required>
+                <button class="photo-btn photo-btn-wide">Create Purchase</button>
+            </form>
+            <div class="data-panel">
+                <h2>Current Budget</h2>
+                <p class="big-number">{{ budget|money }} KGS</p>
+                <p class="muted">Purchases are checked against the budget before they are recorded.</p>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if page_kind == "production" %}
+    <section class="photo-card">
+        <div class="photo-title">
+            <span class="photo-title-mark"></span>
+            <h1>Finished Product Production</h1>
+        </div>
+        <form action="/produce" method="POST" class="ops-form ops-form-panel">
+            <h2>Start production</h2>
+            <select name="prod_id" class="photo-input" required>
+                {% for p in products %}
+                <option value="{{ p[0] }}" {% if selected_product_id|string == p[0]|string %}selected{% endif %}>{{ p[1] }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="qty" min="1" placeholder="Quantity" class="photo-input" required>
+            <button class="photo-btn photo-btn-wide">Produce</button>
+        </form>
+    </section>
+    {% endif %}
+
+    {% if page_kind == "sales" %}
+    <section class="photo-card">
+        <div class="photo-title">
+            <span class="photo-title-mark"></span>
+            <h1>Product Sales</h1>
+        </div>
+        <form action="/sell" method="POST" class="ops-form ops-form-panel">
+            <h2>New sale</h2>
+            <select name="prod_id" class="photo-input" required>
+                {% for p in products %}
+                <option value="{{ p[0] }}" {% if selected_product_id|string == p[0]|string %}selected{% endif %}>{{ p[1] }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="qty" min="1" placeholder="Quantity" class="photo-input" required>
+            <input type="number" name="price" min="1" placeholder="Unit sale price" class="photo-input" required>
+            <button class="photo-btn photo-btn-wide">Record Sale</button>
+        </form>
+
+        <h2 class="photo-subtitle">Recent Sales</h2>
+        <div class="photo-table-wrap">
+            <table class="photo-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Model</th>
+                        <th>Qty</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in sales_log %}
+                    <tr>
+                        <td>{{ sale.id }}</td>
+                        <td>{{ sale.product }}</td>
+                        <td>{{ sale.qty }}</td>
+                        <td>{{ sale.amount|money }}</td>
+                        <td>{{ sale.date }}</td>
+                        <td>
+                            <form action="/sell/rollback/{{ sale.id }}" method="POST">
+                                <button class="photo-btn photo-btn-small" {% if sale.is_canceled %}disabled{% endif %}>Rollback</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="muted">No sales yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if page_kind == "finance" %}
+    <section class="photo-card">
+        <div class="photo-title">
+            <span class="photo-title-mark"></span>
+            <h1>Payroll and Business Loans</h1>
+        </div>
+        <div class="ops-card-grid">
+            <div class="data-panel">
+                <h2>Payroll</h2>
+                <p class="big-number">{{ total_salary|money }} KGS</p>
+                <p class="muted">{{ employee_count }} employees</p>
+                <a href="/pay_salaries" class="photo-btn photo-btn-wide">Pay Salaries</a>
+            </div>
+            <form action="/loan" method="POST" class="ops-form ops-form-panel">
+                <h2>New loan</h2>
+                <input type="text" name="bank" placeholder="Bank name" class="photo-input" required>
+                <input type="number" name="amount" min="1" placeholder="Loan amount" class="photo-input" required>
+                <button class="photo-btn photo-btn-wide">Receive Loan</button>
+            </form>
+        </div>
+
+        <h2 class="photo-subtitle">Active Loans</h2>
+        <div class="photo-table-wrap">
+            <table class="photo-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Bank</th>
+                        <th>Principal</th>
+                        <th>Total Due</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for loan in loans %}
+                    <tr>
+                        <td>{{ loan.ID }}</td>
+                        <td>{{ loan.Bank_Name }}</td>
+                        <td>{{ loan.Loan_Amount|money }}</td>
+                        <td>{{ loan.Total_Due|money }}</td>
+                        <td>
+                            <form action="/loan/repay/{{ loan.ID }}" method="POST">
+                                <button class="photo-btn photo-btn-small">Repay</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="muted">No active loans.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if page_kind == "module2" %}
+    <section class="photo-card">
+        <div class="photo-title">
+            <span class="photo-title-mark"></span>
+            <h1>Automatic Production Request</h1>
+        </div>
+        <form action="/production-request" method="POST" class="ops-form ops-form-panel">
+            <h2>Submit request</h2>
+            <input type="text" name="applicant" placeholder="Applicant full name" class="photo-input" required>
+            <select name="prod_id" class="photo-input" required>
+                {% for p in products %}
+                <option value="{{ p[0] }}" {% if selected_product_id|string == p[0]|string %}selected{% endif %}>{{ p[1] }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="qty" min="1" placeholder="Quantity" class="photo-input" required>
+            <button class="photo-btn photo-btn-wide">Submit and Process</button>
+        </form>
+        <a href="/requests" class="panel-link">Open request history</a>
+    </section>
+    {% endif %}
+
+    <div class="page-actions">
+        <a class="photo-btn photo-btn-small" href="/">Back to Dashboard</a>
+    </div>
+</main>
+</body>
+</html>

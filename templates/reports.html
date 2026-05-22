@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Analytics Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body class="app-body">
+
+<div class="container py-4 page-shell">
+    <div class="topbar d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4">
+        <div>
+            <p class="muted mb-1">Analytics Center</p>
+            <h2 class="title-xl mb-0">Reports Hub</h2>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-3 mt-lg-0">
+            <a class="btn btn-main btn-main-ghost btn-sm" href="/">Dashboard</a>
+            <a class="btn btn-main btn-main-ghost btn-sm" href="/buying">Operations</a>
+        </div>
+    </div>
+
+    <div class="glass-panel p-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="mb-3">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="report-hero">
+            <div>
+                <p class="eyebrow mb-2">Lab 6 Overview</p>
+                <h3 class="title-xl mb-2">Interactive business analytics for the whole factory</h3>
+                <p class="text-muted mb-0">Open each report on a separate page and use the charts to visually explain how production, sales, salaries, and loans change over time.</p>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-1 stagger">
+            {% for card in summary_cards %}
+            <div class="col-md-6 col-xl-3">
+                <div class="metric-card metric-card-compact">
+                    <div class="card-body p-4">
+                        <p class="muted mb-2">{{ card.label }}</p>
+                        <h4 class="title-xl mb-2">{{ card.value }}</h4>
+                        <p class="text-muted mb-0 small">{{ card.note }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="row g-4 mt-2">
+            {% for link in report_links %}
+            <div class="col-md-6">
+                <a href="{{ link.href }}" class="report-link-card report-link-{{ link.accent }}">
+                    <div class="report-link-top">
+                        <span class="report-pill">{{ link.count }} rows</span>
+                        <span class="report-arrow"><i class="bi bi-arrow-right"></i></span>
+                    </div>
+                    <h4 class="title-xl mb-2">{{ link.title }}</h4>
+                    <p class="mb-0 text-muted">{{ link.description }}</p>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if charts %}
+        <div class="row g-4 mt-2">
+            {% for chart in charts %}
+            <div class="col-lg-6">
+                <div class="section-card chart-panel p-3 p-md-4 h-100">
+                    <div class="mb-3">
+                        <h5 class="title-xl mb-1">{{ chart.title }}</h5>
+                        <p class="text-muted mb-0">{{ chart.caption }}</p>
+                    </div>
+                    <div class="chart-box">
+                        <canvas id="{{ chart.id }}"></canvas>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const chartConfigs = {{ charts|tojson }};
+chartConfigs.forEach(function (chart) {
+    const el = document.getElementById(chart.id);
+    if (!el) return;
+    new Chart(el, {
+        type: chart.type,
+        data: {
+            labels: chart.labels,
+            datasets: [{
+                label: chart.dataset_label,
+                data: chart.data,
+                backgroundColor: chart.backgroundColor,
+                borderColor: chart.borderColor,
+                borderWidth: 2,
+                fill: chart.type === 'line',
+                tension: 0.35
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: chart.type !== 'bar'
+                }
+            },
+            scales: chart.type === 'doughnut' ? {} : {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(31, 36, 48, 0.08)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>

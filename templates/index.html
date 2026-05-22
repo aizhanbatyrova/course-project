@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Operations</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body class="app-body">
+<main class="erp-photo-shell operations-stack">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="photo-card">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <section class="photo-card">
+        <div class="photo-title">
+            <span class="photo-title-mark"></span>
+            <h1>🛒 Lab 1: Закупки</h1>
+        </div>
+        <div class="ops-two-col">
+            <form action="/buy" method="POST" class="ops-form">
+                <h2>Заказ материалов</h2>
+                <select name="mat_id" class="photo-input">
+                    {% for m in raw_materials %}
+                    <option value="{{ m[0] }}">{{ m[1] }}</option>
+                    {% endfor %}
+                </select>
+                <input type="number" name="qty" min="1" placeholder="Количество" class="photo-input">
+                <input type="number" name="price" min="1" placeholder="Стоимость заказа" class="photo-input">
+                <button class="photo-btn photo-btn-wide">📦 Оформить заказ</button>
+            </form>
+
+            <div class="supplier-list">
+                <h2>Поставщики</h2>
+                <p>◆ ООО "МеталлИнвест"</p>
+                <p>◆ ООО "АвтоКомплект"</p>
+                <p>◆ ООО "Шинный Мир"</p>
+                <p>◆ ООО "Электро-Деталь"</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="photo-card">
+        <div class="photo-title">
+            <span class="photo-title-mark"></span>
+            <h1>🏭 Lab 2: Производство</h1>
+        </div>
+        <form action="/produce" method="POST" class="ops-form ops-form-panel">
+            <h2>Сборочная линия</h2>
+            <select name="prod_id" class="photo-input">
+                {% for p in products %}
+                <option value="{{ p[0] }}">{{ p[1] }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="qty" min="1" placeholder="Количество" class="photo-input">
+            <button class="photo-btn photo-btn-wide">🔧 Запустить сборку</button>
+        </form>
+    </section>
+
+    <section class="photo-card">
+        <div class="photo-title">
+            <span class="photo-title-mark"></span>
+            <h1>🌍 Global Sales</h1>
+        </div>
+        <div class="photo-title">
+            <span class="photo-title-mark"></span>
+            <h1>Module 2: Production Requests</h1>
+        </div>
+        <form action="/production-request" method="POST" class="ops-form ops-form-panel">
+            <h2>Automatic request workflow</h2>
+            <input type="text" name="applicant" placeholder="Applicant full name" class="photo-input">
+            <select name="prod_id" class="photo-input">
+                {% for p in products %}
+                <option value="{{ p[0] }}">{{ p[1] }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="qty" min="1" placeholder="Quantity" class="photo-input">
+            <button class="photo-btn photo-btn-wide">Submit and process request</button>
+        </form>
+        <a href="/requests" class="panel-link">Open requests history</a>
+
+        <form action="/sell" method="POST" class="ops-form ops-form-panel">
+            <h2>Новая продажа</h2>
+            <select name="prod_id" class="photo-input">
+                {% for p in products %}
+                <option value="{{ p[0] }}">{{ p[1] }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="qty" min="1" placeholder="Количество" class="photo-input">
+            <input type="number" name="price" min="1" placeholder="Цена за шт" class="photo-input">
+            <button class="photo-btn photo-btn-wide">💰 Продать</button>
+        </form>
+
+        <h2 class="photo-subtitle">История продаж</h2>
+        <div class="photo-table-wrap">
+            <table class="photo-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Модель</th>
+                        <th>Кол-во</th>
+                        <th>Сумма</th>
+                        <th>Дата</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in sales_log %}
+                    <tr>
+                        <td>{{ sale.id }}</td>
+                        <td>{{ sale.product }}</td>
+                        <td>{{ sale.qty }}</td>
+                        <td>{{ sale.amount|money }}</td>
+                        <td>{{ sale.date }}</td>
+                        <td>
+                            <form action="/sell/rollback/{{ sale.id }}" method="POST">
+                                <button class="photo-btn photo-btn-small" {% if sale.is_canceled %}disabled{% endif %}>↩ Откат</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="muted">Нет продаж.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="ops-card-grid">
+        <section class="photo-card">
+            <div class="photo-title">
+                <span class="photo-title-mark"></span>
+                <h1>🏦 HR Department</h1>
+            </div>
+            <div class="photo-stats">
+                <div class="photo-stat">
+                    <strong>{{ employee_count }}</strong>
+                    <span>Сотрудников</span>
+                </div>
+                <div class="photo-stat">
+                    <strong>{{ total_salary|money }}</strong>
+                    <span>ФОТ (KGS)</span>
+                </div>
+            </div>
+            <a href="/pay_salaries" class="photo-btn photo-btn-wide">💰 Выплатить зарплаты</a>
+        </section>
+
+        <section class="photo-card">
+            <div class="photo-title">
+                <span class="photo-title-mark"></span>
+                <h1>🏦 Bank Loans</h1>
+            </div>
+            <form action="/loan" method="POST" class="ops-form">
+                <input type="text" name="bank" placeholder="Название банка" class="photo-input">
+                <input type="number" name="amount" min="1" placeholder="Сумма кредита" class="photo-input">
+                <button class="photo-btn photo-btn-wide">🏦 Запросить кредит</button>
+            </form>
+        </section>
+    </div>
+
+    <section class="photo-card">
+        <div class="photo-title">
+            <span class="photo-title-mark"></span>
+            <h1>Активные кредиты</h1>
+        </div>
+        <div class="photo-table-wrap">
+            <table class="photo-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Банк</th>
+                        <th>Основной долг</th>
+                        <th>К выплате</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for loan in loans %}
+                    <tr>
+                        <td>{{ loan.ID }}</td>
+                        <td>{{ loan.Bank_Name }}</td>
+                        <td>{{ loan.Loan_Amount|money }}</td>
+                        <td>{{ loan.Total_Due|money }}</td>
+                        <td>
+                            <form action="/loan/repay/{{ loan.ID }}" method="POST">
+                                <button class="photo-btn photo-btn-small">💰 Погасить</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="muted">Активных кредитов нет.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>
