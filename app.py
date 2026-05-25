@@ -1,12 +1,21 @@
 from collections import OrderedDict
 from datetime import date, datetime
 from decimal import Decimal
+import os
 
 from flask import Flask, flash, redirect, render_template, request, url_for
 import pyodbc
 
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
+
+if load_dotenv:
+    load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = "full_erp_secret"
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "full_erp_secret")
 
 
 @app.template_filter("money")
@@ -15,11 +24,27 @@ def money_filter(value):
 
 
 def get_db_connection():
+    driver = os.getenv("DB_DRIVER", "SQL Server")
+    server = os.getenv("DB_SERVER", "DESKTOP-7H7TALB")
+    database = os.getenv("DB_NAME", "CarManufacturing")
+    trusted_connection = os.getenv("DB_TRUSTED_CONNECTION", "yes")
+
+    username = os.getenv("DB_USER")
+    password = os.getenv("DB_PASSWORD")
+
+    connection_parts = [
+        f"DRIVER={{{driver}}}",
+        f"SERVER={server}",
+        f"DATABASE={database}",
+    ]
+
+    if username and password:
+        connection_parts.extend([f"UID={username}", f"PWD={password}"])
+    else:
+        connection_parts.append(f"Trusted_Connection={trusted_connection}")
+
     return pyodbc.connect(
-        r"DRIVER={SQL Server};"
-        r"SERVER=DESKTOP-7H7TALB;"
-        r"DATABASE=CarManufacturing;"
-        r"Trusted_Connection=yes;"
+        ";".join(connection_parts) + ";"
     )
 
 
